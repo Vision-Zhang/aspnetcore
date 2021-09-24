@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -euxo pipefail
 RESET="\033[0m"
 YELLOW="\033[0;33m"
 
@@ -19,10 +19,25 @@ files=(
 )
 $save_nullglob
 
-for file in ${files[@]}; do
-  echo "##vso[artifact.upload containerfolder=$artifactName;artifactname=$artifactName]$file"
-done
-
 if [[ ${#files[@]} == 0 ]]; then
   __warn "No core files found."
+
+  echo "Working directory..."
+  ls -AF $SYSTEM_DEFAULTWORKINGDIRECTORY
+  echo ""
+
+  echo "$wd:"
+  ls -AF $wd
+  echo ""
+else
+  for file in ${files[@]}; do
+    echo "##vso[artifact.upload containerfolder=$artifactName;artifactname=$artifactName]$file"
+  done
 fi
+
+for dir in /cores /var/cache/abrt /var/crash /var/lib/systemd/coredump /var/spool/abrt; do
+  if [[ -d $dir ]]; then
+    ls -AFR $dir
+    echo ""
+  fi
+done
