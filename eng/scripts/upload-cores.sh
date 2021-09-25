@@ -6,25 +6,30 @@ YELLOW="\033[0;33m"
 
 __warn() {
   echo -e "${YELLOW}warning: $*${RESET}"
+  if [[ -n "${TF_BUILD:-}" ]]; then
+    echo "##vso[task.logissue type=warning]$*"
+  fi
 }
 
-if [[ -z "${SYSTEM_PHASENAME:-}" ]]; then jobName="$AGENT_OS"; else jobName="$SYSTEM_PHASENAME"; fi
-artifactName="${jobName}_Dumps"
+if [[ -n "${SYSTEM_DEFAULTWORKINGDIRECTORY:-}" ]]; then
+  jobName="${SYSTEM_PHASENAME:-$AGENT_OS}"
+  artifactName="${jobName}_Dumps"
+  wd=$SYSTEM_DEFAULTWORKINGDIRECTORY
+else
+  artifactName=Artifacts_Dumps
+  wd=$(pwd -P)
+fi
 
 save_nullglob=$(shopt -p nullglob || true)
 shopt -s nullglob
 files=(
-  $SYSTEM_DEFAULTWORKINGDIRECTORY/core.*
-  $SYSTEM_DEFAULTWORKINGDIRECTORY/dotnet-*.core
+  $wd/core*
+  $wd/dotnet-*.core
 )
 $save_nullglob
 
-if [[ ${#files[@]} == 0 ]]; then
+if [[ -z "${files:-}" || ${#files[@]} == 0 ]]; then
   __warn "No core files found."
-
-  echo "Working directory..."
-  ls -AF $SYSTEM_DEFAULTWORKINGDIRECTORY
-  echo ""
 
   echo "$wd:"
   ls -AF $wd
