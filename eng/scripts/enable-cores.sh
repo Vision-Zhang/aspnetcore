@@ -30,8 +30,8 @@ if [[ -e /proc/self/coredump_filter ]]; then
     __warn "/proc/self/coredump_filter exists but is not writeable."
     ls -l /proc/self/coredump_filter
 
-    echo "/proc/selv/coredump_filter:"
-    cat /proc/selv/coredump_filter
+    echo "/proc/self/coredump_filter:"
+    cat /proc/self/coredump_filter
     echo ""
   fi
 else
@@ -49,7 +49,7 @@ if [[ -e /etc/default/apport ]]; then
   cat /etc/default/apport
   echo ""
 
-  if command systemctl; then
+  if command -V systemctl; then
     if pidof systemctl; then
       systemctl status apport.service || __warn "systemctl: apport disabled."
     else
@@ -59,7 +59,8 @@ if [[ -e /etc/default/apport ]]; then
     __warn "systemctl command does not exist."
   fi
 
-  if command service; then
+  if command -V service; then
+    service apport
     service --status-all
   else
     __warn "service command does not exist."
